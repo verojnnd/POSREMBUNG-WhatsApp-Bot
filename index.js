@@ -75,14 +75,19 @@
 
 // startSock();
 
-const {
-  DisconnectReason,
-  useMultiFileAuthState
-} = require('@whiskeysockets/baileys');
-const makeWASocket = require('@whiskeysockets/baileys').default;
-const express = require('express');
-const bodyParser = require('body-parser');
-const qrcode = require('qrcode-terminal');
+// const {
+//   DisconnectReason,
+//   useMultiFileAuthState
+// } = require('@whiskeysockets/baileys');
+// const makeWASocket = require('@whiskeysockets/baileys').default;
+// const express = require('express');
+// const bodyParser = require('body-parser');
+// const qrcode = require('qrcode-terminal');
+
+import makeWASocket, { DisconnectReason, useMultiFileAuthState } from "@whiskeysockets/baileys";
+import express from "express";
+import bodyParser from "body-parser";
+import qrcode from "qrcode-terminal";
 
 async function startSock() {
   const { state, saveCreds } = await useMultiFileAuthState('./auth');
