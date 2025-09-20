@@ -12,14 +12,14 @@ async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState("auth")
   const sock = makeWASocket({
     auth: state,
-    printQRInTerminal: true
+    // printQRInTerminal: true
   })
 
   // event koneksi WhatsApp
   sock.ev.on("connection.update", (update) => {
     const { connection, lastDisconnect, qr } = update
-    if (qr) {
-      console.log("📌 Scan QR berikut untuk login WhatsApp:")
+    if (qr && !state.creds?.registered) {
+      console.log("📌 Scan QR pertama kali untuk login WhatsApp:")
       qrcode.generate(qr, { small: true })
     }
     if (connection === "close") {
