@@ -5,7 +5,7 @@ import bodyParser from "body-parser"
 import axios from "axios"
 import qrcode from "qrcode-terminal"
 
-const SHEETS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx......../exec" // ganti dengan URL WebApp Apps Script
+const SHEETS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbw46ZgzQMUGksCKA8dLt3c7mBRi1vDHSfEZDs9A8KxRvmLRxLGC0f2kJhl9AOrrnV-pRw/exec" // ganti dengan URL WebApp Apps Script
 const PORT = 3000
 
 async function startBot() {
