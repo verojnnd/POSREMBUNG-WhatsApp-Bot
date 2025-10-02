@@ -5,7 +5,8 @@ import bodyParser from "body-parser"
 import axios from "axios"
 import qrcode from "qrcode-terminal"
 
-const SHEETS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbw46ZgzQMUGksCKA8dLt3c7mBRi1vDHSfEZDs9A8KxRvmLRxLGC0f2kJhl9AOrrnV-pRw/exec" 
+const SHEETS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxcx1RmnlFqR6YruH5wL7sT5vCGZIHiTxaMUEOuJ-qr0qV2LaK6mRjY_v1GSDoyNzUksQ/exec"
+  //"https://script.google.com/macros/s/AKfycbw46ZgzQMUGksCKA8dLt3c7mBRi1vDHSfEZDs9A8KxRvmLRxLGC0f2kJhl9AOrrnV-pRw/exec" 
 const PORT = 3000
 
 async function startBot() {
