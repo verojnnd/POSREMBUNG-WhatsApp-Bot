@@ -19,9 +19,11 @@ async function startBot() {
   sock.ev.on("connection.update", (update) => {
     const { connection, lastDisconnect, qr } = update
     if (qr) {
-      console.clear()
-      console.log("📌 Scan QR berikut untuk login WhatsApp:\n")
-      qrcode.generate(qr, { small: true })
+      console.log("📌 Scan QR di link ini:")
+      console.log("https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(qr))
+      // console.clear()
+      // console.log("📌 Scan QR berikut untuk login WhatsApp:\n")
+      // qrcode.generate(qr, { small: true })
     }
     if (connection === "close") {
       const shouldReconnect =
