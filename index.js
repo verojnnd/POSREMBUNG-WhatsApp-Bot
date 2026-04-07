@@ -12,7 +12,8 @@ const PORT = 3000
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState("auth")
   const sock = makeWASocket({
-    auth: state
+    auth: state,
+    printQRInTerminal: true
   })
 
   // Event koneksi
