@@ -1,38 +1,44 @@
-// index.js (ESM version)
 import makeWASocket, { DisconnectReason, useMultiFileAuthState } from "@whiskeysockets/baileys"
 import express from "express"
 import bodyParser from "body-parser"
 import axios from "axios"
+import pino from "pino"
 
 const SHEETS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxcx1RmnlFqR6YruH5wL7sT5vCGZIHiTxaMUEOuJ-qr0qV2LaK6mRjY_v1GSDoyNzUksQ/exec"
 const PORT = 3000
 
-// Simpan referensi sock di luar supaya Express bisa akses
 let sock = null
 
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState("auth")
 
-  sock = makeWASocket({ auth: state })
+  sock = makeWASocket({
+    auth: state,
+    // Logger minimal supaya QR tidak tenggelam di log
+    logger: pino({ level: "silent" }),
+    // Pakai browser fingerprint yang lebih umum
+    browser: ["Ubuntu", "Chrome", "20.0.04"],
+    printQRInTerminal: false, // kita handle manual
+  })
 
   sock.ev.on("connection.update", (update) => {
     const { connection, lastDisconnect, qr } = update
 
     if (qr) {
-      // Tampilkan QR sebagai URL yang bisa dibuka di browser
-      console.log("\n📌 Buka URL ini di browser untuk scan QR:")
-      console.log("https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(qr))
-      console.log("\n⏳ QR berlaku sekitar 60 detik, refresh kalau expired.\n")
+      console.log("\n========================================")
+      console.log("📌 SCAN QR INI — buka URL di browser:")
+      console.log("https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=" + encodeURIComponent(qr))
+      console.log("========================================\n")
     }
 
     if (connection === "close") {
-      const shouldReconnect =
-        lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut
-      console.log("🔌 Koneksi terputus, reconnect:", shouldReconnect)
+      const code = lastDisconnect?.error?.output?.statusCode
+      const shouldReconnect = code !== DisconnectReason.loggedOut
+      console.log(`🔌 Koneksi tutup (code: ${code}), reconnect: ${shouldReconnect}`)
       if (shouldReconnect) {
-        startBot() // Hanya restart bot, bukan Express
+        setTimeout(startBot, 3000) // tunggu 3 detik sebelum reconnect
       } else {
-        console.log("❌ Bot logged out. Hapus folder auth/ lalu jalankan ulang.")
+        console.log("❌ Logged out. Hapus folder auth/ lalu restart.")
       }
     } else if (connection === "open") {
       console.log("✅ WhatsApp bot connected!")
@@ -42,7 +48,6 @@ async function startBot() {
   sock.ev.on("creds.update", saveCreds)
 }
 
-// Express dibuat SEKALI di luar startBot
 const app = express()
 app.use(bodyParser.json())
 
@@ -55,18 +60,17 @@ app.post("/send", async (req, res) => {
     }
 
     if (!sock) {
-      return res.status(503).json({ error: "Bot belum siap, tunggu koneksi WhatsApp" })
+      return res.status(503).json({ error: "Bot belum siap" })
     }
 
     const jid = whatsapp.replace(/[^0-9]/g, "") + "@s.whatsapp.net"
     await sock.sendMessage(jid, { text: message })
 
-    // Update status ke Google Sheets
     try {
       await axios.post(SHEETS_WEBAPP_URL, {
-        whatsapp: whatsapp,
+        whatsapp,
         status: "Terkirim",
-        sheetName: sheetName
+        sheetName
       })
     } catch (err) {
       console.error("⚠️ Gagal update Sheets:", err.message)
@@ -83,8 +87,98 @@ app.listen(PORT, () => {
   console.log(`🚀 API server running on http://localhost:${PORT}`)
 })
 
-// Jalankan bot
 startBot()
+
+// // index.js (ESM version)
+// import makeWASocket, { DisconnectReason, useMultiFileAuthState } from "@whiskeysockets/baileys"
+// import express from "express"
+// import bodyParser from "body-parser"
+// import axios from "axios"
+
+// const SHEETS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxcx1RmnlFqR6YruH5wL7sT5vCGZIHiTxaMUEOuJ-qr0qV2LaK6mRjY_v1GSDoyNzUksQ/exec"
+// const PORT = 3000
+
+// // Simpan referensi sock di luar supaya Express bisa akses
+// let sock = null
+
+// async function startBot() {
+//   const { state, saveCreds } = await useMultiFileAuthState("auth")
+
+//   sock = makeWASocket({ auth: state })
+
+//   sock.ev.on("connection.update", (update) => {
+//     const { connection, lastDisconnect, qr } = update
+
+//     if (qr) {
+//       // Tampilkan QR sebagai URL yang bisa dibuka di browser
+//       console.log("\n📌 Buka URL ini di browser untuk scan QR:")
+//       console.log("https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(qr))
+//       console.log("\n⏳ QR berlaku sekitar 60 detik, refresh kalau expired.\n")
+//     }
+
+//     if (connection === "close") {
+//       const shouldReconnect =
+//         lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut
+//       console.log("🔌 Koneksi terputus, reconnect:", shouldReconnect)
+//       if (shouldReconnect) {
+//         startBot() // Hanya restart bot, bukan Express
+//       } else {
+//         console.log("❌ Bot logged out. Hapus folder auth/ lalu jalankan ulang.")
+//       }
+//     } else if (connection === "open") {
+//       console.log("✅ WhatsApp bot connected!")
+//     }
+//   })
+
+//   sock.ev.on("creds.update", saveCreds)
+// }
+
+// // Express dibuat SEKALI di luar startBot
+// const app = express()
+// app.use(bodyParser.json())
+
+// app.post("/send", async (req, res) => {
+//   try {
+//     const { whatsapp, message, sheetName } = req.body
+
+//     if (!whatsapp || !message || !sheetName) {
+//       return res.status(400).json({ error: "Missing whatsapp, message, or sheetName" })
+//     }
+
+//     if (!sock) {
+//       return res.status(503).json({ error: "Bot belum siap, tunggu koneksi WhatsApp" })
+//     }
+
+//     const jid = whatsapp.replace(/[^0-9]/g, "") + "@s.whatsapp.net"
+//     await sock.sendMessage(jid, { text: message })
+
+//     // Update status ke Google Sheets
+//     try {
+//       await axios.post(SHEETS_WEBAPP_URL, {
+//         whatsapp: whatsapp,
+//         status: "Terkirim",
+//         sheetName: sheetName
+//       })
+//     } catch (err) {
+//       console.error("⚠️ Gagal update Sheets:", err.message)
+//     }
+
+//     res.json({ success: true })
+//   } catch (err) {
+//     console.error("❌ Error kirim:", err.message)
+//     res.status(500).json({ error: err.message })
+//   }
+// })
+
+// app.listen(PORT, () => {
+//   console.log(`🚀 API server running on http://localhost:${PORT}`)
+// })
+
+// // Jalankan bot
+// startBot()
+
+
+
 // // index.js (ESM version)
 // import makeWASocket, { DisconnectReason, useMultiFileAuthState } from "@whiskeysockets/baileys"
 // import express from "express"
