@@ -2,7 +2,7 @@ const COL_NOMOR_WA = 38;  // Kolom AL (Nomor WA)
 const COL_STATUS   = 39;  // Kolom AM (Status)
 
 // Alamat VPS
-const API_URL = "http://31.97.110.147:3000/send";
+const API_URL = "http://(VPS address: ***.***.***.**):3000/send"; // Fill your own VPS address
 
 /**
  * Trigger onEdit di Google Sheets
