@@ -4,7 +4,7 @@ import bodyParser from "body-parser"
 import axios from "axios"
 import pino from "pino"
 
-const SHEETS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxcx1RmnlFqR6YruH5wL7sT5vCGZIHiTxaMUEOuJ-qr0qV2LaK6mRjY_v1GSDoyNzUksQ/exec"
+const SHEETS_WEBAPP_URL = "..." // Fill with your own App Script Deployment link (end with /exec)
 const PORT = 3000
 
 let sock = null
